@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
-import Navbar from "../components/organism/NavBar";
+import Navbar from "../components/organism/Navbar";
 import Title from "../components/atoms/Title";
 import SubTitle from "../components/atoms/SubTitle";
 import Button from "../components/atoms/Button";

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import HomeSection from "../components/organism/HomeSection";
 import PatientSection from "../components/organism/PatientSection";
-import Navbar from "../components/organism/NavBar";
+import Navbar from "../components/organism/Navbar";
 import styled from "styled-components";
 
 // Datos de ejemplo para pacientes

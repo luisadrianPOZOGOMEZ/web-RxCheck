@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import '../assets/styles/index.css'
-import Medico from '../assets/imgs/image.svg'
+import Medico from '../assets/imgs/Image.svg'
 import { useNavigate } from 'react-router-dom';
 
 const HeroSectionBackground = styled.div`

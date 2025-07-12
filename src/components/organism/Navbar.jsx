@@ -1,4 +1,4 @@
-// src/components/organisms/Navbar.jsx
+// src/components/organisms/NavBar.jsx
 import styled from "styled-components";
 import { NavLink } from "react-router-dom";
 

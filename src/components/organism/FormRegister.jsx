@@ -6,7 +6,7 @@ import { FormRow } from "../molecules/FormRow";
 import { WarningBox } from "../molecules/WarningBox";
 import { InfoBox } from "../molecules/InfoBox";
 import { Checkbox } from "../atoms/CheckBox";
-import { Input } from "../atoms/input";
+import { Input } from "../atoms/Input";
 
 const Form = styled.form`
   background: white;
