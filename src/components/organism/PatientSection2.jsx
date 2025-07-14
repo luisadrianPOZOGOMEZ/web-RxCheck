@@ -5,6 +5,7 @@ import Input3 from "../atoms/Input3";
 import Label2 from "../atoms/Label2";
 import TextArea2 from "../atoms/TextArea2";
 import styled from "styled-components";
+import { useState, useEffect } from "react";
 
 const Section = styled.div`
   margin-bottom: 40px;
@@ -21,46 +22,192 @@ const Section = styled.div`
   }
 `;
 
-const PatientSection2 = () => (
-  <Section>
-    <SectionTitle>DATOS DEL PACIENTE</SectionTitle>
+const HintText = styled.p`
+  font-size: 12px;
+  color: #718096;
+  margin-top: 5px;
+  font-style: italic;
+`;
 
-    <FormRow2 className="two-columns">
-      <FormGroup2>
-        <Label2 htmlFor="paciente_nombre">Nombre Completo <span className="required">*</span></Label2>
-        <Input3 type="text" id="paciente_nombre" name="paciente_nombre" required />
-      </FormGroup2>
-      <FormGroup2>
-        <Label2 htmlFor="paciente_fecha_nacimiento">Fecha de Nacimiento <span className="required">*</span></Label2>
-        <Input3 type="date" id="paciente_fecha_nacimiento" name="paciente_fecha_nacimiento" required />
-      </FormGroup2>
-    </FormRow2>
+const PatientSection2 = ({ onPatientData }) => {
+  const [formData, setFormData] = useState({
+    curp: "",
+    peso: "",
+    talla: "",
+    diagnostico: ""
+  });
+  const [patientId, setPatientId] = useState(null);
+  const [curpError, setCurpError] = useState("");
 
-    <FormRow2 className="two-columns">
-      <FormGroup2>
-        <Label2 htmlFor="paciente_peso">Peso (kg)</Label2>
-        <Input3 type="number" id="paciente_peso" name="paciente_peso" step="0.1" min="0" />
-      </FormGroup2>
-      <FormGroup2>
-        <Label2 htmlFor="paciente_talla">Talla (cm)</Label2>
-        <Input3 type="number" id="paciente_talla" name="paciente_talla" step="0.1" min="0" />
-      </FormGroup2>
-    </FormRow2>
+  useEffect(() => {
+    const fetchPaciente = async () => {
+      if (formData.curp.length === 18) {
+        try {
+          const res = await fetch(`https://api.rxcheck.icu/user/users/${formData.curp}`);
+          if (!res.ok) throw new Error("Paciente no encontrado");
+          const data = await res.json();
 
-    <FormRow2 className="single-column">
-      <FormGroup2>
-        <Label2 htmlFor="paciente_domicilio">Domicilio (Obligatorio para medicamentos Fracción I)</Label2>
-        <Input3 type="text" id="paciente_domicilio" name="paciente_domicilio" />
-      </FormGroup2>
-    </FormRow2>
+          if (data.role !== "paciente") {
+            throw new Error("El usuario no es un paciente");
+          }
 
-    <FormRow2 className="single-column">
-      <FormGroup2>
-        <Label2 htmlFor="diagnostico">Diagnóstico (Obligatorio para medicamentos Fracción I)</Label2>
-        <TextArea2 id="diagnostico" name="diagnostico" placeholder="Indique el diagnóstico del paciente" />
-      </FormGroup2>
-    </FormRow2>
-  </Section>
-);
+          setPatientId(data.id);
+          setCurpError("");
+
+          // Envía la data hacia Recetas.jsx si está el callback
+          if (onPatientData) {
+            onPatientData({
+              id: data.id,
+              weight: formData.peso,
+              height: formData.talla,
+              diagnostic: formData.diagnostico,
+            });
+          }
+        } catch (err) {
+          setPatientId(null);
+          setCurpError("⚠️ CURP no válida o el usuario no es un paciente");
+        }
+      }
+    };
+
+    fetchPaciente();
+  }, [formData.curp]);
+
+  useEffect(() => {
+    if (patientId && onPatientData) {
+      onPatientData({
+        id: patientId,
+        weight: formData.peso,
+        height: formData.talla,
+        diagnostic: formData.diagnostico
+      });
+    }
+  }, [formData.peso, formData.talla, formData.diagnostico, patientId]);
+
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === "curp" ? value.toUpperCase() : value
+    }));
+  };
+
+  const allowedKeys = [
+    "Backspace", "Delete", "ArrowLeft", "ArrowRight", "ArrowUp",
+    "ArrowDown", "Tab", "Enter", "Escape", "Home", "End", "CapsLock",
+    "Shift", "Control", "Alt", "Meta"
+  ];
+
+  const isValidKey = (key, type) => {
+    const regexes = {
+      textOnly: /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]+$/,
+      numbersOnly: /^[0-9]$/,
+      curp: /^[A-Z0-9]$/
+    };
+    return regexes[type]?.test(key);
+  };
+
+  const isValidText = (text, type) => {
+    const regexes = {
+      textOnly: /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]+$/,
+      numbersOnly: /^[0-9]+$/,
+      curp: /^[A-Z0-9]+$/
+    };
+    return regexes[type]?.test(text);
+  };
+
+  const handleInputTypeValidation = (e, type) => {
+    const key = e.key;
+    if (e.ctrlKey || e.metaKey || allowedKeys.includes(key)) return;
+    if (!isValidKey(key, type)) e.preventDefault();
+  };
+
+  const handlePasteValidation = (e, type) => {
+    const pastedText = e.clipboardData.getData("text");
+    if (!isValidText(pastedText, type)) e.preventDefault();
+  };
+
+  const renderHint = (text) => <HintText>{text}</HintText>;
+
+  return (
+    <Section>
+      <SectionTitle>DATOS DEL PACIENTE</SectionTitle>
+
+      <FormRow2 className="two-columns">
+        <FormGroup2>
+          <Label2 htmlFor="curp">CURP del paciente <span className="required">*</span></Label2>
+          <Input3
+            id="curp"
+            name="curp"
+            type="text"
+            maxLength={18}
+            pattern="[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[0-9A-Z]{2}"
+            value={formData.curp}
+            onChange={handleChange}
+            onKeyDown={(e) => handleInputTypeValidation(e, "curp")}
+            onPaste={(e) => handlePasteValidation(e, "curp")}
+            required
+            style={{ textTransform: "uppercase" }}
+          />
+          {renderHint("18 caracteres en mayúsculas, formato: AAAA######HAAAAA##")}
+          {curpError && <HintText style={{ color: "red" }}>{curpError}</HintText>}
+        </FormGroup2>
+        <FormGroup2>
+          <Label2 htmlFor="peso">Peso (kg)</Label2>
+          <Input3
+            id="peso"
+            name="peso"
+            type="text"
+            placeholder="Ej: 070.300"
+            value={formData.peso}
+            onChange={(e) => {
+              const value = e.target.value;
+              const regex = /^\d{0,3}(\.\d{0,3})?$/;
+              if (regex.test(value)) {
+                setFormData((prev) => ({ ...prev, peso: value }));
+              }
+            }}
+            maxLength={7}
+          />
+        </FormGroup2>
+      </FormRow2>
+
+      <FormRow2 className="two-columns">
+        <FormGroup2>
+          <Label2 htmlFor="talla">Talla (m)</Label2>
+          <Input3
+            id="talla"
+            name="talla"
+            type="text"
+            placeholder="Ej: 1.65"
+            value={formData.talla}
+            onChange={(e) => {
+              const value = e.target.value;
+              const regex = /^\d{0,1}(\.\d{0,2})?$/;
+              if (regex.test(value)) {
+                setFormData((prev) => ({ ...prev, talla: value }));
+              }
+            }}
+            maxLength={4}
+          />
+        </FormGroup2>
+
+        <FormGroup2>
+          <Label2 htmlFor="diagnostico">Diagnóstico</Label2>
+          <TextArea2
+            id="diagnostico"
+            name="diagnostico"
+            placeholder="Escriba el diagnóstico"
+            onKeyDown={(e) => handleInputTypeValidation(e, "textOnly")}
+            onPaste={(e) => handlePasteValidation(e, "textOnly")}
+            value={formData.diagnostico}
+            onChange={handleChange}
+          />
+        </FormGroup2>
+      </FormRow2>
+    </Section>
+  );
+};
 
 export default PatientSection2;

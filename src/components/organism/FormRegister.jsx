@@ -1,12 +1,13 @@
 // src/components/organisms/FormRegister.jsx
 import styled from "styled-components";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FormGroup } from "../molecules/FormGroup";
 import { FormRow } from "../molecules/FormRow";
 import { WarningBox } from "../molecules/WarningBox";
 import { InfoBox } from "../molecules/InfoBox";
 import { Checkbox } from "../atoms/CheckBox";
 import { Input } from "../atoms/input";
+import { useNavigate } from "react-router-dom";
 
 const Form = styled.form`
   background: white;
@@ -83,6 +84,10 @@ const SubmitButton = styled.button`
 
 function FormRegister() {
   const [formData, setFormData] = useState({});
+  const [errors, setErrors] = useState({});
+
+  const navigate = useNavigate();
+
 
   const allowedKeys = [
     "Backspace", "Delete", "ArrowLeft", "ArrowRight", "ArrowUp",
@@ -121,12 +126,59 @@ function FormRegister() {
     return regexes[type]?.test(text);
   };
 
-  const handleChange = (e) => {
+/*   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const updatedFormData = { ...formData, [name]: value };
+    setFormData(updatedFormData);
+
+    // Validación cruzada CURP - fecha de nacimiento
+    if (name === "curp" || name === "fecha_nacimiento") {
+      validateCurpAndBirthDate(updatedFormData);
+    }
+  }; */
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    const fieldValue = type === "checkbox" ? checked : value;
+    const updated = { ...formData, [name]: fieldValue };
+    setFormData(updated);
+
+    if (name === "curp" || name === "fecha_nacimiento") {
+      validateCurpAndBirthDate(updated);
+    }
   };
 
-  const handleSubmit = (e) => {
+
+
+    const validateCurpAndBirthDate = (data) => {
+    const curp = (data.curp || "").toUpperCase();
+    const fecha = data.fecha_nacimiento || "";
+
+    if (curp.length === 18 && fecha) {
+      const anioCurp = (curp[4] === '0' ? '20' : '19') + curp.slice(4, 6);
+      const mesCurp = curp.slice(6, 8);
+      const diaCurp = curp.slice(8, 10);
+      const [anio, mes, dia] = fecha.split("-");
+
+      if (anio !== anioCurp || mes !== mesCurp || dia !== diaCurp) {
+        setErrors(prev => ({ ...prev, curp_fecha: "⚠️ La fecha no coincide con la CURP" }));
+      } else {
+        setErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors.curp_fecha;
+          return newErrors;
+        });
+      }
+    } else {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors.curp_fecha;
+        return newErrors;
+      });
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+=\-]).{8,}$/;
@@ -143,7 +195,7 @@ function FormRegister() {
     const curp = formData.curp || "";
     const fecha = formData.fecha_nacimiento || "";
     if (curp.length === 18 && fecha) {
-      const anioCurp = (curp[4] === '0' ? '20' : '19') + curp.slice(4, 6);
+      const anioCurp = (curp[4] === "0" ? "20" : "19") + curp.slice(4, 6);
       const mesCurp = curp.slice(6, 8);
       const diaCurp = curp.slice(8, 10);
       const [anio, mes, dia] = fecha.split("-");
@@ -153,8 +205,57 @@ function FormRegister() {
       }
     }
 
-    console.log("Formulario válido y listo para enviar", formData);
+    try {
+      const permisos = {
+        fraccion1: !!formData.puede_prescribir_fraccion_i,
+        fraccion2: !!formData.puede_prescribir_fraccion_ii,
+        fraccion3: !!formData.puede_prescribir_fraccion_iii,
+        fraccion4: !!formData.puede_prescribir_fraccion_iv,
+        fraccion5: !!formData.puede_prescribir_fraccion_v,
+        fraccion6: !!formData.puede_prescribir_fraccion_vi
+      };
+
+      const terminos = {
+        datosCorrectos: !!formData.acepta_terminos,
+        verificacionDatos: !!formData.acepta_verificacion,
+        notificacionesEmail: !!formData.acepta_notificaciones
+      };
+
+      const form = new FormData();
+      form.append("curp", formData.curp);
+      form.append("nombre", formData.nombres);
+      form.append("apellidoPaterno", formData.apellido_paterno);
+      form.append("apellidoMaterno", formData.apellido_materno);
+      form.append("email", formData.email_cuenta);
+      form.append("password", formData.password);
+      form.append("role", "medico");
+      form.append("rfc", formData.rfc);
+      form.append("cedulaProfesional", formData.cedula_profesional);
+      form.append("telefono", formData.telefono_principal);
+      form.append("permisosPrescripcion", JSON.stringify(permisos));
+      form.append("declaracionTerminos", JSON.stringify(terminos));
+      form.append("fechaNacimiento", formData.fecha_nacimiento);
+      form.append("imagen", ""); 
+
+      const res = await fetch("https://api.rxcheck.icu/user/users", {
+        method: "POST",
+        body: form
+      });
+
+      if (res.ok) {
+        alert("✅ Médico registrado exitosamente");
+        navigate("/Login");
+      } else {
+        const errorText = await res.text();
+        alert("❌ Error al registrar médico: " + errorText);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("❌ Error de conexión: " + err.message);
+    }
   };
+
+  
 
   const renderHint = (text) => <HintText>{text}</HintText>;
 
@@ -176,17 +277,11 @@ function FormRegister() {
                 pattern="[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[0-9A-Z]{2}"
                 onKeyDown={(e) => handleInputTypeValidation(e, "curp")}
                 onPaste={(e) => handlePasteValidation(e, "curp")}
-                onChange={(e) =>
-                  handleChange({
-                    target: {
-                      name: "curp",
-                      value: e.target.value.toUpperCase(),
-                    },
-                  })
-                }
+                onChange={handleChange}
                 required
               />
               {renderHint("18 caracteres en mayúsculas, formato: AAAA######HAAAAA##")}
+              {errors.curp_fecha && <HintText style={{ color: "red" }}>{errors.curp_fecha}</HintText>}
             </FormGroup>
             <FormGroup label="Nombre(s)" name="nombres" required>
               <Input
