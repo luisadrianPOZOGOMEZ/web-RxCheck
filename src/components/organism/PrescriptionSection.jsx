@@ -57,7 +57,7 @@ useEffect(() => {
     }
     const token = localStorage.getItem("token");
     console.log("🔍 Buscando medicinas:", searchTerm);
-    fetch(`http://api.rxcheck.icu/medication/search?q=${encodeURIComponent(searchTerm)}`, {
+    fetch(`https://api.rxcheck.icu/medication/search?q=${encodeURIComponent(searchTerm)}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(res => {
