@@ -22,10 +22,20 @@ const ResetButton = styled(Button2)`
   }
 `;
 
-const SubmitSection = () => (
+const SubmitSection = ({ isReceived, pdf_url }) => (
   <Wrapper>
-    <Button2 type="submit">Generar Receta Médica</Button2>
-    <ResetButton type="reset">Limpiar Formulario</ResetButton>
+    {isReceived ? (
+      <>
+      <Button2>
+        <a href={pdf_url} style={{color: 'white', textDecoration: 'none'}}>Descargar PDF</a>
+      </Button2>
+      </>
+    ) : (
+      <>
+        <Button2 type="submit">Generar Receta Médica</Button2>
+        <ResetButton type="reset">Limpiar Formulario</ResetButton>
+      </>
+    )}
   </Wrapper>
 );
 

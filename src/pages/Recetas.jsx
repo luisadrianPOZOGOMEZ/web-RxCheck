@@ -56,6 +56,8 @@ const Recetas = () => {
 
   const [patientData, setPatientData] = useState(null);
   const [medications, setMedications] = useState([]);
+  const [isReceived, setIsReceived] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault(); // Evita que el formulario recargue la página
@@ -102,8 +104,10 @@ const Recetas = () => {
 
       const result = await response.json();
       if (response.ok) {
+        console.log("✅ Receta enviada:", result);
         alert("✅ Receta enviada correctamente");
-        console.log("Resultado:", result);
+        setIsReceived(true);
+        setPdfUrl(result.data.pdf_path);
       } else {
         console.error("❌ Error en la respuesta:", result);
         alert("❌ Error al enviar la receta. Verifica los datos.");
@@ -131,7 +135,10 @@ const Recetas = () => {
             <PatientSection2 onPatientData={(data) => setPatientData(data)}/>
             <PrescriptionSection onMedicationsChange={(data) => setMedications(data)} />
             <ValidityInfo />
-            <SubmitSection />
+            <SubmitSection
+              isReceived={isReceived}
+              pdf_url={pdfUrl}            
+             />
           </form>
         </FormContent>
       </FormContainer>
