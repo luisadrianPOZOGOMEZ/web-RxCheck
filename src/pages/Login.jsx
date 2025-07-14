@@ -1,5 +1,6 @@
 import styled, { createGlobalStyle } from "styled-components";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Input3 from "../components/atoms/Input3";
 import Label2 from "../components/atoms/Label2";
 import Button2 from "../components/atoms/Button2";
@@ -48,7 +49,7 @@ const StyledLink = styled(Link)`
 
 const HintText = styled.p`
   font-size: 12px;
-  color: #718096;
+  color: #e53e3e;
   margin-top: 5px;
   font-style: italic;
 `;
@@ -56,6 +57,8 @@ const HintText = styled.p`
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState("");
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -74,11 +77,35 @@ const Login = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validate()) {
-      console.log("Formulario de login válido:", formData);
-      alert("Iniciando sesión...");
+    setServerError("");
+
+    if (!validate()) return;
+
+    try {
+      const response = await fetch("https://api.rxcheck.icu/user/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.data?.access_token) {
+        alert("✅ Login exitoso");
+        // Puedes guardar el token en localStorage si necesitas autenticar otras peticiones
+        localStorage.setItem("token", data.data.access_token);
+        localStorage.setItem("user", JSON.stringify(data.data.user));
+        navigate("/home");
+      } else {
+        setServerError(data.message || "Error de autenticación");
+      }
+    } catch (err) {
+      console.error(err);
+      setServerError("Error de conexión con el servidor");
     }
   };
 
@@ -90,15 +117,29 @@ const Login = () => {
         <form onSubmit={handleSubmit}>
           <FormGroup2>
             <Label2 htmlFor="email">Correo electrónico</Label2>
-            <Input3 id="email" type="email" value={formData.email} onChange={handleChange} required />
+            <Input3
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
             {errors.email && <HintText>{errors.email}</HintText>}
           </FormGroup2>
 
           <FormGroup2>
             <Label2 htmlFor="password">Contraseña</Label2>
-            <Input3 id="password" type="password" value={formData.password} onChange={handleChange} required />
+            <Input3
+              id="password"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
             {errors.password && <HintText>{errors.password}</HintText>}
           </FormGroup2>
+
+          {serverError && <HintText>{serverError}</HintText>}
 
           <Button2 type="submit">Iniciar sesión</Button2>
 

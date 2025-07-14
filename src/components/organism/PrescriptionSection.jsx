@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import FormGroup2 from "../molecules/FormGroup2";
 import FormRow2 from "../molecules/FormRow2";
 import Input3 from "../atoms/Input3";
@@ -13,7 +14,6 @@ const Section = styled.div`
   padding: 30px;
   background: #fafafa;
   transition: all 0.3s ease;
-
   &:hover {
     border-color: #647be1;
     transform: translateY(-2px);
@@ -21,62 +21,230 @@ const Section = styled.div`
   }
 `;
 
+const SuggestionBox = styled.ul`
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background: white;
+  position: absolute;
+  z-index: 10;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 150px;
+  overflow-y: auto;
+`;
 
-const PrescriptionSection = () => (
-  <Section>
-    <SectionTitle>PRESCRIPCIÓN MÉDICA</SectionTitle>
+const SuggestionItem = styled.li`
+  padding: 8px;
+  cursor: pointer;
+  &:hover {
+    background: #f0f0f0;
+  }
+`;
 
-    <FormRow2 className="two-columns">
-      <FormGroup2>
-        <Label2 htmlFor="denominacion_generica">Denominación Genérica <span className="required">*</span></Label2>
-        <Input3 type="text" id="denominacion_generica" name="denominacion_generica" required />
-      </FormGroup2>
-      <FormGroup2>
-        <Label2 htmlFor="denominacion_distintiva">Denominación Distintiva (Opcional)</Label2>
-        <Input3 type="text" id="denominacion_distintiva" name="denominacion_distintiva" />
-      </FormGroup2>
-    </FormRow2>
+const PrescriptionSection = ({ onMedicationsChange }) => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [selectedMedications, setSelectedMedications] = useState([]);
 
-    <FormRow2 className="two-columns">
-      <FormGroup2>
-        <Label2 htmlFor="concentracion">Concentración <span className="required">*</span></Label2>
-        <Input3 type="text" id="concentracion" name="concentracion" required />
-      </FormGroup2>
-      <FormGroup2>
-        <Label2 htmlFor="forma_farmaceutica">Forma Farmacéutica <span className="required">*</span></Label2>
-        <Input3 type="text" id="forma_farmaceutica" name="forma_farmaceutica" placeholder="Ej: tabletas, cápsulas, jarabe" required />
-      </FormGroup2>
-    </FormRow2>
 
-    <FormRow2 className="two-columns">
-      <FormGroup2>
-        <Label2 htmlFor="dosis">Dosis <span className="required">*</span></Label2>
-        <Input3 type="text" id="dosis" name="dosis" placeholder="No usar abreviaturas" required />
-      </FormGroup2>
-      <FormGroup2>
-        <Label2 htmlFor="via_administracion">Vía de Administración <span className="required">*</span></Label2>
-        <Input3 type="text" id="via_administracion" name="via_administracion" placeholder="Ej: Oral, Intravenosa, Tópica" required />
-      </FormGroup2>
-    </FormRow2>
 
-    <FormRow2 className="two-columns">
-      <FormGroup2>
-        <Label2 htmlFor="frecuencia">Frecuencia <span className="required">*</span></Label2>
-        <Input3 type="text" id="frecuencia" name="frecuencia" placeholder="Evitar abreviaturas" required />
-      </FormGroup2>
-      <FormGroup2>
-        <Label2 htmlFor="duracion_tratamiento">Duración del Tratamiento <span className="required">*</span></Label2>
-        <Input3 type="text" id="duracion_tratamiento" name="duracion_tratamiento" required />
-      </FormGroup2>
-    </FormRow2>
+useEffect(() => {
+  const delay = setTimeout(() => {
+    if (!searchTerm) {
+      setSuggestions([]);
+      return;
+    }
+    const token = localStorage.getItem("token");
+    console.log("🔍 Buscando medicinas:", searchTerm);
+    fetch(`http://api.rxcheck.icu/medication/search?q=${encodeURIComponent(searchTerm)}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(res => {
+        console.log("Status fetch:", res.status);
+        return res.json();
+      })
+      .then(data => {
+        console.log("Data recibida:", data);
+        if (data.success && Array.isArray(data.data)) {
+          setSuggestions(data.data);
+        } else {
+          setSuggestions([]);
+        }
+      })
+      .catch(err => {
+        console.error("Error en fetch de medicamento:", err);
+        setSuggestions([]);
+      });
+  }, 300);
+  return () => clearTimeout(delay);
+}, [searchTerm]);
 
-    <FormRow2 className="single-column">
-      <FormGroup2>
-        <Label2 htmlFor="indicaciones">Indicaciones Completas y Claras <span className="required">*</span></Label2>
-        <TextArea2 id="indicaciones" name="indicaciones" placeholder="Instrucciones detalladas para la administración del medicamento. No usar abreviaturas." required />
-      </FormGroup2>
-    </FormRow2>
-  </Section>
-);
+  const handleSelectMedication = (medication) => {
+    setSelectedMedications((prev) => [
+      ...prev,
+      {
+        id: medication.id,
+        text: medication.text,
+        dosis: "",
+        duration: "",
+        indication: "",
+      },
+    ]);
+    setSearchTerm("");
+    setSuggestions([]);
+  };
+
+  const updateMedicationField = (index, field, value) => {
+    const updated = [...selectedMedications];
+    updated[index][field] = value;
+    setSelectedMedications(updated);
+    if (onMedicationsChange) {
+      const payload = updated.map(({ id, dosis, duration, indication }) => ({
+        id,
+        dosis,
+        duration,
+        indication,
+      }));
+      onMedicationsChange(payload);
+    }
+  };
+
+  const removeMedication = (index) => {
+    const updated = selectedMedications.filter((_, i) => i !== index);
+    setSelectedMedications(updated);
+    if (onMedicationsChange) {
+      const payload = updated.map(({ id, dosis, duration, indication }) => ({
+        id,
+        dosis,
+        duration,
+        indication,
+      }));
+      onMedicationsChange(payload);
+    }
+  };
+
+  const allowedKeys = [
+    "Backspace", "Delete", "ArrowLeft", "ArrowRight", "ArrowUp",
+    "ArrowDown", "Tab", "Enter", "Escape", "Home", "End", "CapsLock",
+    "Shift", "Control", "Alt", "Meta"
+  ];
+
+  const isValidKey = (key, type) => {
+    const regexes = {
+      textOnly: /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]+$/,
+      numbersOnly: /^[0-9]$/,
+      curp: /^[A-Z0-9]$/
+    };
+    return regexes[type]?.test(key);
+  };
+
+  const isValidText = (text, type) => {
+    const regexes = {
+      textOnly: /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]+$/,
+      numbersOnly: /^[0-9]+$/,
+      curp: /^[A-Z0-9]+$/
+    };
+    return regexes[type]?.test(text);
+  };
+
+  const handleInputTypeValidation = (e, type) => {
+    const key = e.key;
+    if (e.ctrlKey || e.metaKey || allowedKeys.includes(key)) return;
+    if (!isValidKey(key, type)) e.preventDefault();
+  };
+
+  const handlePasteValidation = (e, type) => {
+    const pastedText = e.clipboardData.getData("text");
+    if (!isValidText(pastedText, type)) e.preventDefault();
+  };
+
+  return (
+    <Section>
+      <SectionTitle>PRESCRIPCIÓN MÉDICA</SectionTitle>
+
+      <FormRow2 className="single-column">
+        <FormGroup2 style={{ position: "relative" }}>
+          <Label2>Buscar medicamento por nombre</Label2>
+          <Input3
+            type="text"
+            placeholder="Ej: Paracetamol"
+            value={searchTerm}
+            
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          {suggestions.length > 0 && (
+            <SuggestionBox>
+              {suggestions.map((item) => (
+                <SuggestionItem key={item.id} onClick={() => handleSelectMedication(item)}>
+                  {item.text}
+                </SuggestionItem>
+              ))}
+            </SuggestionBox>
+          )}
+        </FormGroup2>
+      </FormRow2>
+
+      {selectedMedications.map((med, index) => (
+        <div key={index}>
+          <h4 style={{ marginTop: "20px" }}>{med.text}</h4>
+
+          <FormRow2 className="two-columns">
+            <FormGroup2>
+              <Label2>Dosis</Label2>
+              <Input3
+                type="text"
+                value={med.dosis}
+                onChange={(e) => updateMedicationField(index, "dosis", e.target.value)}
+                onKeyDown={(e) => handleInputTypeValidation(e, "textOnly")}
+                onPaste={(e) => handlePasteValidation(e, "textOnly")}
+              />
+            </FormGroup2>
+            <FormGroup2>
+              <Label2>Duración</Label2>
+              <Input3
+                type="text"
+                value={med.duration}
+                onChange={(e) => updateMedicationField(index, "duration", e.target.value)}
+                onKeyDown={(e) => handleInputTypeValidation(e, "textOnly")}
+                onPaste={(e) => handlePasteValidation(e, "textOnly")}
+              />
+            </FormGroup2>
+          </FormRow2>
+
+          <FormRow2 className="two-columns">
+            <FormGroup2>
+              <Label2>Indicaciones</Label2>
+              <TextArea2
+                value={med.indication}
+                onChange={(e) => updateMedicationField(index, "indication", e.target.value)}
+                onKeyDown={(e) => handleInputTypeValidation(e, "textOnly")}
+                onPaste={(e) => handlePasteValidation(e, "textOnly")}
+              />
+            </FormGroup2>
+            <FormGroup2>
+              <Label2>Eliminar</Label2>
+              <button
+                type="button"
+                onClick={() => removeMedication(index)}
+                style={{
+                  padding: "10px 15px",
+                  backgroundColor: "#e74c3c",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                  marginTop: "7px",
+                }}
+              >
+                Quitar
+              </button>
+            </FormGroup2>
+          </FormRow2>
+        </div>
+      ))}
+    </Section>
+  );
+};
 
 export default PrescriptionSection;
