@@ -8,6 +8,7 @@ import Home from "../pages/Home";
 import VerPaciente from "../pages/VerPaciente";
 import Recetas from '../pages/Recetas';
 import Login from '../pages/Login';
+import Privacy from '../pages/PrivacyPolicy';
 
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
           <Route path="/ver-paciente" element={<VerPaciente />} />
           <Route path="/Crear-Recetas" element={<Recetas/>} />
           <Route path="/Login" element={<Login/>} />
+          <Route path="/privacy" element={<Privacy/>} />
         </Routes>
       </UserContextProvider>
     </BrowserRouter>
