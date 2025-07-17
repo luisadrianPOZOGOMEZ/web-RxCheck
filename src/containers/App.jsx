@@ -19,10 +19,31 @@ function App() {
         <Routes>
           <Route path='/' element={<Landing/>}/>
           <Route path='/register' element={<Register/>}/>
-          <Route path="/home" element={<Home />} />
-          <Route path="/ver-paciente" element={<VerPaciente />} />
-          <Route path="/Crear-Recetas" element={<Recetas/>} />
           <Route path="/Login" element={<Login/>} />
+          <Route
+            path="/home"
+            element={
+              <RouteProtected>
+                <Home />
+              </RouteProtected>
+            }
+          />
+          <Route
+            path="/ver-paciente"
+            element={
+              <RouteProtected>
+                <VerPaciente />
+              </RouteProtected>
+            }
+          />
+          <Route
+            path="/Crear-Recetas"
+            element={
+              <RouteProtected>
+                <Recetas />
+              </RouteProtected>
+            }
+          />
         </Routes>
       </UserContextProvider>
     </BrowserRouter>
