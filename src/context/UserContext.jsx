@@ -1,14 +1,18 @@
-import { createContext, useState } from "react";
+import React, { createContext, useState } from "react";
 
-export const UserContext = createContext({})
+export const UserContext = createContext();
 
-export default function UserContextProvider({ children }){
-    const [isLogged, setisLogged] = useState(false)
-    // const [user, setUser] = useState({})
+const UserContextProvider = ({ children }) => {
+  const [user, setUser] = useState(() => {
+    const stored = localStorage.getItem("user");
+    return stored ? JSON.parse(stored) : null;
+  });
 
-    return(
-        <UserContext.Provider value={{ isLogged, setisLogged}}>
-            {children}
-        </UserContext.Provider>
-    )
-}
+  return (
+    <UserContext.Provider value={{ user, setUser }}>
+      {children}
+    </UserContext.Provider>
+  );
+};
+
+export default UserContextProvider;

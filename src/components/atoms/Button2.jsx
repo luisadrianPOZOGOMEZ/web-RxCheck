@@ -2,6 +2,7 @@ import styled from "styled-components";
 
 const Button2 = styled.button`
   background: linear-gradient(135deg, #647be1 0%, #5a6bcc 100%);
+  margin-top: 20px;
   color: white;
   border: none;
   padding: 15px 40px;

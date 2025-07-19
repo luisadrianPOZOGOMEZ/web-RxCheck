@@ -92,6 +92,8 @@ const Recetas = () => {
       }))
     };
 
+    console.log("📦 Payload enviado:", JSON.stringify(payload, null, 2));
+
     try {
       const response = await fetch("https://api.rxcheck.icu/recipe", {
         method: "POST",

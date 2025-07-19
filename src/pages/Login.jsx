@@ -26,7 +26,7 @@ const Card = styled.div`
   box-shadow: 0 20px 40px rgba(0,0,0,0.1);
   width: 100%;
   max-width: 400px;
-  text-align: center;
+  text-align: center; 
 `;
 
 const Title = styled.h2`
