@@ -3,6 +3,10 @@ import HomeSection from "../components/organism/HomeSection";
 import PatientSection from "../components/organism/PatientSection";
 import Navbar from "../components/organism/Navbar";
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
+import { createGlobalStyle } from "styled-components";
+
+
 
 // Datos de ejemplo para pacientes
 const samplePatients = [
@@ -35,6 +39,8 @@ const Home = () => {
   const [showPatients, setShowPatients] = useState(false);
   const [patients] = useState(samplePatients);
   const [filteredPatients, setFilteredPatients] = useState(samplePatients);
+  const navigate = useNavigate();
+
 
   const handleSearch = (query) => {
     const q = query.toLowerCase();
@@ -49,15 +55,15 @@ const Home = () => {
   };
 
   const handleViewRecipes = (name) => {
-    alert(`Mostrando recetas de: ${name}`);
+    //alert(`Mostrando recetas de: ${name}`);
   };
 
   const handleRegisterPatient = () => {
-    alert("Redirigiendo al formulario de registro de paciente...");
+    //alert("Redirigiendo al formulario de registro de paciente...");
   };
 
   const handleCreateRecipe = () => {
-    alert("Redirigiendo al formulario de crear receta...");
+    navigate("/Crear-Recetas");
   };
 
   return (

@@ -9,6 +9,9 @@ import VerPaciente from "../pages/VerPaciente";
 import Recetas from '../pages/Recetas';
 import Login from '../pages/Login';
 import Privacy from '../pages/PrivacyPolicy';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 
 function App() {
@@ -47,6 +50,17 @@ function App() {
             }
           />
         </Routes>
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="colored"
+        />
       </UserContextProvider>
     </BrowserRouter>
   )

@@ -1,6 +1,7 @@
 // src/components/organisms/DoctorSection.jsx
 import { useState, useEffect } from "react";
 import styled from "styled-components";
+import { toast } from "react-toastify";
 
 import FormGroup2   from "../molecules/FormGroup2";
 import FormRow2     from "../molecules/FormRow2";
@@ -61,7 +62,7 @@ const DoctorSection = ({ curp }) => {
         setLoading(false);
       })
       .catch((err) => {
-        console.error("DoctorSection ➜", err);
+        toast.error("DoctorSection ➜", err);
         setError("No se pudieron cargar los datos del médico.");
         setLoading(false);
       });

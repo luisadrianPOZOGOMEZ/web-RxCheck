@@ -1,4 +1,3 @@
-// src/components/organisms/FormRegister.jsx
 import styled from "styled-components";
 import { useState } from "react";
 import { FormGroup } from "../molecules/FormGroup";
@@ -7,6 +6,7 @@ import { WarningBox } from "../molecules/WarningBox";
 import { InfoBox } from "../molecules/InfoBox";
 import { Checkbox } from "../atoms/CheckBox";
 import { Input } from "../atoms/Input";
+import { toast } from "react-toastify";
 
 const Form = styled.form`
   background: white;
@@ -96,12 +96,12 @@ function FormRegister() {
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+=\-]).{8,}$/;
 
     if (!passwordRegex.test(formData.password)) {
-      alert("⚠️ La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo especial.");
+      toast.error("⚠️ La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo especial.");
       return;
     }
 
     if (formData.password !== formData.password_confirm) {
-      alert("⚠️ Las contraseñas no coinciden");
+      toast.error("⚠️ Las contraseñas no coinciden");
       return;
     }
     
@@ -113,7 +113,7 @@ function FormRegister() {
       const diaCurp = curp.slice(8, 10);
       const [anio, mes, dia] = fecha.split("-");
       if (anio !== anioCurp || mes !== mesCurp || dia !== diaCurp) {
-        alert("⚠️ La fecha de nacimiento no coincide con la CURP");
+        toast.error("⚠️ La fecha de nacimiento no coincide con la CURP");
         return;
       }
     }

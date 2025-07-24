@@ -42,7 +42,7 @@ const DateSection = () => {
       })
       .catch((err) => {
         console.error("Error obteniendo hora confiable:", err);
-        alert("❌ No se pudo verificar la fecha en línea. Verifica tu conexión.");
+        //alert("❌ No se pudo verificar la fecha en línea. Verifica tu conexión.");
       });
   }, []);
 
