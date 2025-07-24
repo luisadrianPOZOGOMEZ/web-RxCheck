@@ -7,6 +7,8 @@ import ValidityInfo from "../components/organism/ValidityInfo";
 import styled, { createGlobalStyle } from "styled-components";
 import React from "react";
 import { useState } from "react";
+import { toast } from "react-toastify";
+
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -67,13 +69,13 @@ const Recetas = () => {
 
 
     if (!patientData || medications.length === 0) {
-      alert("⚠️ Faltan datos del paciente o medicamentos.");
+      toast.warning("⚠️ Faltan datos del paciente o medicamentos.");
       return;
     }
 
     const token = localStorage.getItem("token"); // Asegúrate que el token esté guardado
     if (!token) {
-      alert("⚠️ Token de autenticación no disponible.");
+      //alert("⚠️ Token de autenticación no disponible.");
       return;
     }
 
@@ -107,16 +109,16 @@ const Recetas = () => {
       const result = await response.json();
       if (response.ok) {
         console.log("✅ Receta enviada:", result);
-        alert("✅ Receta enviada correctamente");
+        //alert("✅ Receta enviada correctamente");
         setIsReceived(true);
         setPdfUrl(result.data.pdf_path);
       } else {
         console.error("❌ Error en la respuesta:", result);
-        alert("❌ Error al enviar la receta. Verifica los datos.");
+        //alert("❌ Error al enviar la receta. Verifica los datos.");
       }
     } catch (error) {
       console.error("❌ Error en la petición:", error);
-      alert("❌ Error de red al enviar la receta.");
+      //alert("❌ Error de red al enviar la receta.");
     }
   };
 

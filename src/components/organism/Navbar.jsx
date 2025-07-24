@@ -1,8 +1,10 @@
 // src/components/organisms/NavBar.jsx
 import styled from "styled-components";
 import { NavLink } from "react-router-dom";
+import Logo from "../../assets/imgs/Logo_LogRec.svg"
 
 const NavbarWrapper = styled.nav`
+  font-family: 'Poppins', sans-serif;
   background: rgba(255, 255, 255, 0.95);
   padding: 1rem 2rem;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -26,6 +28,11 @@ const Brand = styled.div`
   font-size: 1.5rem;
   font-weight: 700;
   color: #647be1;
+
+  img {
+    width: 30px;
+    height: 30px;
+  }
 `;
 
 const Menu = styled.ul`
@@ -55,14 +62,15 @@ const MenuLink = styled(NavLink)`
 const Navbar = () => (
   <NavbarWrapper>
     <Container>
-      <Brand>🏥 Sistema Médico</Brand>
+      <Brand>
+      <img src={Logo} /> RxCheck</Brand>
       <Menu>
         <MenuItem>
           <MenuLink to="/home">Home</MenuLink>
         </MenuItem>
-        <MenuItem>
+{/*         <MenuItem>
           <MenuLink to="/ver-paciente">Ver Pacientes</MenuLink>
-        </MenuItem>
+        </MenuItem> */}
         <MenuItem>
           <MenuLink to="/Crear-Recetas">Crear Receta</MenuLink>
         </MenuItem>

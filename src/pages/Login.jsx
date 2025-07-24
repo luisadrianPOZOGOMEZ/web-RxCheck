@@ -1,4 +1,6 @@
 import styled, { createGlobalStyle } from "styled-components";
+import { useContext } from "react";
+import { UserContext } from "../context/UserContext";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Input3 from "../components/atoms/Input3";
@@ -59,6 +61,8 @@ const Login = () => {
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState("");
   const navigate = useNavigate();
+  const { setUser } = useContext(UserContext);
+
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -95,10 +99,11 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok && data.data?.access_token) {
-        alert("✅ Login exitoso");
+        //alert("✅ Login exitoso");
         // Puedes guardar el token en localStorage si necesitas autenticar otras peticiones
         localStorage.setItem("token", data.data.access_token);
         localStorage.setItem("user", JSON.stringify(data.data.user));
+        setUser(data.data.user);
         navigate("/home");
       } else {
         setServerError(data.message || "Error de autenticación");
