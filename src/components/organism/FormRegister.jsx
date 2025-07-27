@@ -9,6 +9,7 @@ import { Checkbox } from "../atoms/CheckBox";
 import { Input } from "../atoms/Input";
 import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
+import { Link } from "react-router-dom";
 
 
 const Form = styled.form`
@@ -82,7 +83,44 @@ const SubmitButton = styled.button`
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(72, 187, 120, 0.4);
   }
+
 `;
+
+// PrivacyBox siguiendo el patrón de InfoBox y WarningBox
+const PrivacyBox = styled.div`
+  background: #f0fff4;
+  border-left: 4px solid #48bb78;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 0 8px 8px 0;
+`;
+
+const PrivacyTitle = styled.h4`
+  color: #2f855a;
+  margin-bottom: 8px;
+`;
+
+const PrivacyText = styled.p`
+  color: #276749;
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 12px;
+`;
+
+const PrivacyLink = styled(Link)`
+  color: #2f855a;
+  text-decoration: none;
+  font-weight: 600;
+  border-bottom: 1px solid #48bb78;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    color: #276749;
+    border-bottom-color: #276749;
+    text-decoration: none;
+  }
+`;
+
 
 function FormRegister() {
   const [formData, setFormData] = useState({});
@@ -428,15 +466,13 @@ function FormRegister() {
 
           <InfoBox title="📝 Permisos de Prescripción">
             Seleccione los tipos de medicamentos que está autorizado a prescribir según su perfil profesional:
-          </InfoBox>
           <Checkbox label="Fracción I - Estupefacientes (Requiere permiso especial de COFEPRIS)" name="puede_prescribir_fraccion_i" />
           <Checkbox label="Fracción II - Psicotrópicos" name="puede_prescribir_fraccion_ii" />
           <Checkbox label="Fracción III - Medicamentos que requieren receta médica" name="puede_prescribir_fraccion_iii" />
           <Checkbox label="Fracción IV - Medicamentos que requieren receta médica para su venta" name="puede_prescribir_fraccion_iv" defaultChecked />
           <Checkbox label="Fracción V - Medicamentos sin receta (venta libre)" name="puede_prescribir_fraccion_v" defaultChecked />
           <Checkbox label="Fracción VI - Medicamentos herbolarios" name="puede_prescribir_fraccion_vi" defaultChecked />
-
-
+          </InfoBox>
       </Section>
 
       
@@ -457,6 +493,19 @@ function FormRegister() {
           name="acepta_notificaciones"
         />
       </WarningBox>
+
+      {/* Aviso de Privacidad */}
+      <PrivacyBox>
+        <PrivacyTitle>🔒 Aviso de Privacidad</PrivacyTitle>
+        <PrivacyText>
+          Te recomendamos revisar nuestro Aviso de Privacidad para conocer cómo protegemos 
+          y utilizamos tus datos personales de acuerdo con la Ley Federal de Protección de 
+          Datos Personales en Posesión de los Particulares.
+        </PrivacyText>
+        <PrivacyLink to="/privacy">
+          📄 Ver Aviso de Privacidad
+        </PrivacyLink>
+      </PrivacyBox>
 
       <ButtonContainer>
         <SubmitButton type="submit">Registrar Médico</SubmitButton>
