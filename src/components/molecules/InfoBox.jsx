@@ -16,7 +16,7 @@ const Title = styled.h4`
 
 const Text = styled.p`
   color: #2c5282;
-  font-size: 13px;
+  font-size: 13px;  
   line-height: 1.5;
 `;
 
